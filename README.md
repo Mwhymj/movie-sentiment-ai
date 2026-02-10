@@ -41,6 +41,7 @@
 4.  `model_v2.joblib`: ไฟล์โมเดล V2 (Improved)
 5.  `8.synthetic_netflix_like_thai_reviews_3class_hard_5000.csv`: ไฟล์ฐานข้อมูลรีวิว
 
+---
 วิธีการติดตั้งและใช้งาน (Local Setup)
 ```
 1. **Clone Repository**
@@ -62,5 +63,5 @@ streamlit run app.py
 
 * **[ชื่อของคุณ]** - รหัสนักศึกษา [รหัสของคุณ]
 * **[ชื่อเพื่อน]** - รหัสนักศึกษา [รหัสเพื่อน]
-
+---
 
