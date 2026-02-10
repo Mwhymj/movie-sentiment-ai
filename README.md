@@ -46,20 +46,20 @@
 ## ⚙️ วิธีการติดตั้งและใช้งาน (Local Setup)
 
 1. **Clone Repository**
-   ```bash
+   ```
    git clone [URL-ของ-Git-คุณ]
 
 ```
 
 2. **ติดตั้ง Library**
-```bash
+```
 pip install -r requirements.txt
 
 ```
 
 
 3. **รันแอปพลิเคชัน**
-```bash
+```
 streamlit run app.py
 
 ```
