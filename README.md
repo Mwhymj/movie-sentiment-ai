@@ -20,12 +20,11 @@
 
 ⚙️ วิธีการติดตั้งและใช้งาน (Local Setup)
 
-```
 
 1. **Clone Repository**
 
 ```bash
-git clone [URL-ของ-Git-คุณ]
+git clone [URL-Git]
 
 ```
 
