@@ -65,7 +65,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.title("🚀 High-Speed AI Model Analysis")
+st.title("🎬 CineSense AI: Film Sentiment Analysis")
 
 # --- Session State ---
 if 'h' not in st.session_state: st.session_state.update({'h':'', 'b':'', 'l':'Positive'})
@@ -96,7 +96,7 @@ if model_v1 and model_v2:
             st.divider()
             col1, col2 = st.columns(2)
 
-            for m, col, name in [(model_v1, col1, "🤖 Baseline (V1)"), (model_v2, col2, "🚀 Optimized (V2)")]:
+            for m, col, name in [(model_v1, col1, "🤖 Model V.1"), (model_v2, col2, "🚀 Model V.2")]:
                 with col:
                     st.markdown(f'<div class="model-label">{name}</div>', unsafe_allow_html=True)
                     # ทำนายผล
@@ -124,3 +124,4 @@ m_col2.metric("Accuracy", "100%")
 m_col3.metric("Algo", "Logistic")
 m_col4.metric("NLP", "PyThaiNLP")
 st.markdown('</div>', unsafe_allow_html=True)
+
