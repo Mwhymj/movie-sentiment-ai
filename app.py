@@ -81,7 +81,7 @@ if menu == "Main Terminal":
 
     t_col1, t_col2, _ = st.columns([1, 1, 5])
     with t_col1:
-        if st.button("🎲 Fetch Random Data", use_container_width=True):
+        if st.button("🎲 Random Data", use_container_width=True):
             if df is not None:
                 s = df.sample(1).iloc[0]
                 st.session_state.update({'h': f"DATASET-ID: {s['review_id'][:8]}", 'b': s['text'], 'l': s['label']})
@@ -151,3 +151,4 @@ else:
         - **Benchmarking:** ทดสอบความแม่นยำเทียบกับข้อมูลอ้างอิงที่ระบุโดยผู้เชี่ยวชาญ
         """)
         st.markdown('</div>', unsafe_allow_html=True)
+
