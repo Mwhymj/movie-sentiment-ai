@@ -1,40 +1,65 @@
 import streamlit as st
-import joblib
-import pandas as pd
-import numpy as np
-from pythainlp.tokenize import word_tokenize
-import time
+from textblob import TextBlob
 
-# ---------------- CONFIG ----------------
-st.set_page_config(layout="wide", page_title="CineSense Netflix")
+# -------------------------------
+# Page Config
+# -------------------------------
+st.set_page_config(
+    page_title="Movie Sentiment AI",
+    page_icon="🎬",
+    layout="centered"
+)
 
-# ---------------- LOAD ----------------
-@st.cache_resource
-def load_assets():
-    try:
-        m1 = joblib.load("model.joblib")
-        m2 = joblib.load("model_v2.joblib")
-        df = pd.read_csv("8.synthetic_netflix_like_thai_reviews_3class_hard_5000.csv")
-        return m1, m2, df
-    except:
-        return None, None, None
-
-model_v1, model_v2, df = load_assets()
-
-# ---------------- CSS Netflix ----------------
+# -------------------------------
+# Custom CSS
+# -------------------------------
 st.markdown("""
 <style>
+.main {
+    background-color: #0E1117;
+}
 
-body {
-    background-color: black;
+h1, h2, h3, p {
     color: white;
-    font-family: 'Space Grotesk', sans-serif;
 }
 
-/* Navbar */
-.navbar {
-    backdrop-filter: blur(12px);
-    background-color: rgba(20,20,20,0.7);
-    padding: 20px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+.stTextArea textarea {
+    background-color: #262730;
+    color: white;
 }
+</style>
+""", unsafe_allow_html=True)
+
+# -------------------------------
+# Title
+# -------------------------------
+st.title("🎬 Movie Review Sentiment Analyzer")
+st.write("พิมพ์รีวิวหนัง แล้วระบบจะวิเคราะห์อารมณ์ให้")
+
+# -------------------------------
+# Input Text
+# -------------------------------
+review = st.text_area("✏️ ใส่รีวิวหนังของคุณ")
+
+# -------------------------------
+# Analyze Button
+# -------------------------------
+if st.button("🔍 วิเคราะห์ความรู้สึก"):
+
+    if review.strip() == "":
+        st.warning("กรุณาใส่ข้อความก่อน")
+    else:
+        blob = TextBlob(review)
+        polarity = blob.sentiment.polarity
+
+        # -----------------------
+        # Sentiment Result
+        # -----------------------
+        if polarity > 0:
+            st.success("😊 ความรู้สึกเชิงบวก (Positive)")
+        elif polarity < 0:
+            st.error("😡 ความรู้สึกเชิงลบ (Negative)")
+        else:
+            st.info("😐 ความรู้สึกเป็นกลาง (Neutral)")
+
+        st.write(f"คะแนน Sentiment: {polarity:.2f}")
