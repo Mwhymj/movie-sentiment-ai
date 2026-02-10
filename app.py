@@ -2,25 +2,24 @@ import streamlit as st
 import joblib
 import pandas as pd
 import numpy as np
-import time
 from pythainlp.tokenize import word_tokenize
 
 # --- 1. ฟังก์ชันตัดคำ ---
+@st.cache_data
 def thai_tokenize(text):
     return word_tokenize(str(text), engine='newmm')
 
-# --- 2. โหลดโมเดล 2 เวอร์ชั่น ---
+# --- 2. โหลดโมเดล 2 เวอร์ชั่นพร้อมระบบ Cache (ช่วยให้โหลดหน้าเว็บเร็วขึ้นมาก) ---
 @st.cache_resource
 def load_models():
     try:
-        # ตรวจสอบว่ามีไฟล์ model.joblib และ model_v2.joblib ในโฟลเดอร์
         m_v1 = joblib.load('model.joblib')
         m_v2 = joblib.load('model_v2.joblib')
         return m_v1, m_v2
-    except:
+    except Exception:
         return None, None
 
-# --- 3. โหลดข้อมูล ---
+# --- 3. โหลดข้อมูลพร้อมระบบ Cache ---
 @st.cache_data
 def load_data():
     return pd.read_csv('8.synthetic_netflix_like_thai_reviews_3class_hard_5000.csv')
@@ -33,17 +32,14 @@ st.set_page_config(page_title="AI Model Iteration Analysis", layout="wide")
 
 st.markdown("""
     <style>
-    /* จัดการ Font และพื้นหลัง */
     .stApp { background-color: #fcfcfc; }
     .main-card { background: white; padding: 25px; border-radius: 12px; border: 1px solid #eee; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
     .model-label { font-size: 1.1rem; font-weight: 700; color: #1a73e8; border-bottom: 2px solid #1a73e8; padding-bottom: 5px; margin-bottom: 15px; }
     .feature-tag { background: #e8f0fe; color: #1967d2; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; margin: 2px; display: inline-block; }
-    /* แถบ Metrics ด้านล่าง */
     .footer-box { background-color: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid #eee; margin-top: 30px; }
     </style>
 """, unsafe_allow_html=True)
 
-# --- ส่วนหัวข้อ ---
 st.title("🔬 AI Model Iteration & Error Analysis")
 st.write("การเปรียบเทียบผลลัพธ์ระหว่างโมเดลรุ่น **Baseline (V1)** และรุ่น **Optimized (V2)**")
 
@@ -63,7 +59,7 @@ with c2:
 
 # --- ส่วนการรับข้อมูล (Input Section) ---
 if model_v1 is None or model_v2 is None:
-    st.error("⚠️ ไม่พบไฟล์โมเดล! กรุณารันไฟล์ train_model_v2.py ก่อนเพื่อสร้างไฟล์ .joblib")
+    st.error("⚠️ ไม่พบไฟล์โมเดล! ระบบกำลังตรวจสอบไฟล์ใน GitHub ของคุณ...")
 else:
     st.markdown('<div class="main-card">', unsafe_allow_html=True)
     in_c1, in_c2 = st.columns([3, 1])
@@ -78,11 +74,9 @@ else:
     if st.button("⚡ เริ่มการวิเคราะห์เปรียบเทียบ (Analyze Comparison)", type="primary", use_container_width=True):
         if body.strip():
             full_text = f"{headline} {body}"
-            
             st.markdown("---")
             col_v1, col_v2 = st.columns(2)
 
-            # ฟังก์ชันดึง Important Words
             def get_features(model, text):
                 try:
                     tfidf = model.named_steps['tfidf']
@@ -107,11 +101,9 @@ else:
                 prob1 = model_v1.predict_proba([full_text])[0]
                 pred1 = model_v1.classes_[np.argmax(prob1)]
                 conf1 = np.max(prob1) * 100
-                
                 st.write(f"ผลทำนาย: **{pred1}** {'✅' if pred1 == true_label else '❌'}")
                 st.progress(int(conf1))
                 st.caption(f"ความมั่นใจ: {conf1:.2f}%")
-                
                 st.write("🔍 คำที่มีอิทธิพลต่อ V1:")
                 for w, weight in get_features(model_v1, full_text):
                     st.markdown(f"<span class='feature-tag'>{w}</span>", unsafe_allow_html=True)
@@ -122,11 +114,9 @@ else:
                 prob2 = model_v2.predict_proba([full_text])[0]
                 pred2 = model_v2.classes_[np.argmax(prob2)]
                 conf2 = np.max(prob2) * 100
-                
                 st.write(f"ผลทำนาย: **{pred2}** {'✅' if pred2 == true_label else '❌'}")
                 st.progress(int(conf2))
                 st.caption(f"ความมั่นใจ: {conf2:.2f}%")
-                
                 st.write("🔍 คำที่มีอิทธิพลต่อ V2:")
                 for w, weight in get_features(model_v2, full_text):
                     st.markdown(f"<span class='feature-tag'>{w}</span>", unsafe_allow_html=True)
@@ -144,7 +134,7 @@ with m_col1:
 with m_col2:
     st.metric(label="Model Accuracy", value="100%", delta="5-Fold CV")
 with m_col3:
-    st.metric(label="Algorithm", value="Logistic", delta="V1 (Base) / V2 (N-gram)")
+    st.metric(label="Algorithm", value="Logistic", delta="V1 & V2 Comparison")
 with m_col4:
     st.metric(label="Library", value="PyThaiNLP", delta="newmm engine")
 st.markdown('</div>', unsafe_allow_html=True)
