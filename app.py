@@ -122,7 +122,7 @@ st.markdown("""
 model_v1, model_v2 = load_models()
 df = load_data()
 
-st.markdown('<div class="netflix-logo">NETFLIX <span style="color:white; font-weight:100; font-size:25px;">AI ANALYTICS</span></div>', unsafe_allow_html=True)
+st.markdown('<div class="netflix-logo">Movie <span style="color:white; font-weight:100; font-size:25px;">AI ANALYTICS</span></div>', unsafe_allow_html=True)
 
 if 'h' not in st.session_state: st.session_state.update({'h':'', 'b':'', 'l':'Positive'})
 
@@ -179,3 +179,4 @@ m_col2.metric("System Accuracy", "100%")
 m_col3.metric("Primary Algo", "Logistic")
 m_col4.metric("Library", "PyThaiNLP")
 st.markdown('</div>', unsafe_allow_html=True)
+
