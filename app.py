@@ -20,7 +20,7 @@ def thai_tokenize(text):
 @st.cache_resource(show_spinner="Connecting to Neural Engines...")
 def load_assets():
     try:
-        # Load core models and datasets
+        # อ้างอิงไฟล์จาก GitHub Repository ของคุณ
         m1 = joblib.load('model.joblib')
         m2 = joblib.load('model_v2.joblib')
         df = pd.read_csv('8.synthetic_netflix_like_thai_reviews_3class_hard_5000.csv')
@@ -47,7 +47,7 @@ def get_feature_importance(model, text, pred_class):
         return sorted(feat_list, key=lambda x: x[1], reverse=True)[:5]
     except Exception: return []
 
-# --- 3. UI STYLING ---
+# --- 3. UI STYLING (Modern Corporate Look) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Kanit:wght@300;400&display=swap');
@@ -75,7 +75,7 @@ with st.sidebar:
 
 if menu == "Main Terminal":
     st.markdown('<div class="section-title">Sentiment Analysis Terminal</div>', unsafe_allow_html=True)
-    st.write("Interface สำหรับวิเคราะห์และจำแนกทัศนคติจากฐานข้อมูลรีวิวภาษาไทย")
+    st.write("Interface สำหรับวิเคราะห์และจำแนกทัศนคติจากฐานข้อมูลรีวิวภาพยนตร์")
 
     if 'h' not in st.session_state: st.session_state.update({'h':'', 'b':'', 'l':'Positive'})
 
@@ -119,7 +119,7 @@ if menu == "Main Terminal":
 
 else:
     st.markdown('<div class="section-title">System Architecture & Analytics Overview</div>', unsafe_allow_html=True)
-    st.write("เอกสารทางเทคนิคแสดงโครงสร้างระบบประมวลผลภาษาธรรมชาติ (NLP) และข้อมูลสถิติ")
+    st.write("เอกสารทางเทคนิคแสดงโครงสร้างระบบประมวลผลภาษาธรรมชาติ (NLP) และข้อมูลสถิติประเมินประสิทธิภาพ")
 
     st.markdown('<div class="data-card">', unsafe_allow_html=True)
     m_col1, m_col2, m_col3, m_col4 = st.columns(4)
@@ -148,6 +148,6 @@ else:
         การประเมินประสิทธิภาพ (Evaluation Framework):
         - **Baseline Testing:** กำหนดขอบเขตความแม่นยำด้วยโมเดลตั้งต้น
         - **Optimization:** พัฒนา Sigma Core ผ่านกระบวนการปรับจูนพารามิเตอร์ (Hyperparameters)
-        - **Benchmarking:** ทดสอบความแม่นยำเทียบกับข้อมูลอ้างอิง (Ground Truth)
+        - **Benchmarking:** ทดสอบความแม่นยำเทียบกับข้อมูลอ้างอิงที่ระบุโดยผู้เชี่ยวชาญ
         """)
         st.markdown('</div>', unsafe_allow_html=True)
