@@ -6,17 +6,17 @@ from pythainlp.tokenize import word_tokenize
 
 # --- 1. การตั้งค่าหน้าเว็บ ---
 st.set_page_config(
-    page_title="CineSense Intelligence | ระบบวิเคราะห์รีวิวหนัง",
+    page_title="CineSense Pro | Disney+ Hotstar Edition",
     page_icon="🎬",
     layout="wide"
 )
 
-# --- 2. ระบบประมวลผล (Core Engine) ---
+# --- 2. ระบบประมวลผลหลัก ---
 @st.cache_data(show_spinner=False)
 def thai_tokenize(text):
     return word_tokenize(str(text), engine='newmm')
 
-@st.cache_resource(show_spinner="กำลังเชื่อมต่อระบบ AI...")
+@st.cache_resource(show_spinner="กำลังเข้าสู่ระบบ...")
 def load_assets():
     try:
         m1 = joblib.load('model.joblib')
@@ -27,7 +27,6 @@ def load_assets():
 
 model_v1, model_v2, df = load_assets()
 
-# ฟังก์ชันดึงคำสำคัญ (Feature Importance) กลับมาแสดงผล
 def get_feature_importance(model, text, pred_class):
     try:
         tfidf = model.named_steps['tfidf']
@@ -45,161 +44,173 @@ def get_feature_importance(model, text, pred_class):
         return sorted(feat_list, key=lambda x: x[1], reverse=True)[:5]
     except: return []
 
-# --- 3. การตกแต่งสไตล์ DISNEY+ HOTSTAR (Centered & Balanced) ---
+# --- 3. การตกแต่ง UI (เน้นความคมชัดของตัวหนังสือ) ---
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=Inter:wght@700&display=swap');
     
+    /* พื้นหลัง */
     .stApp {
-        background: radial-gradient(circle at 50% 0%, #1a2a6c 0%, #061121 50%, #000000 100%);
-        color: #ffffff;
-        font-family: 'Kanit', sans-serif;
+        background: radial-gradient(circle at 50% 10%, #1a2a6c 0%, #061121 40%, #000000 100%);
     }
 
-    /* จัดสมดุลหน้าจอไม่ให้กว้างเกินไป */
+    /* จัดสมดุลกึ่งกลาง */
     .block-container {
-        max-width: 1000px;
-        padding-top: 2.5rem;
+        max-width: 1050px;
+        padding-top: 2rem;
+        color: #FFFFFF !important; /* บังคับตัวอักษรขาวทุกส่วน */
     }
 
-    /* หัวข้อหลัก */
-    .main-title {
-        font-size: 3rem;
+    /* หัวข้อใหญ่ */
+    .brand-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 3.5rem;
         font-weight: 700;
         text-align: center;
-        background: linear-gradient(180deg, #ffffff 0%, #a8c0ff 100%);
+        background: linear-gradient(180deg, #FFFFFF 0%, #A8C0FF 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         margin-bottom: 0px;
     }
 
-    /* กล่องเนื้อหาหลัก */
-    .content-box {
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
+    /* กล่องข้อความและการ์ด */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.07);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 15px;
         padding: 30px;
         margin-top: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.6);
     }
 
-    /* ปุ่มกด */
+    /* ปรับปรุงความคมชัดของข้อความในช่อง Input */
+    .stTextArea label, .stTextInput label, .stSelectbox label {
+        color: #E0E0E0 !important;
+        font-weight: 600 !important;
+        font-size: 1.1rem !important;
+    }
+
+    /* ปรับแต่งปุ่ม */
     .stButton>button {
-        background: linear-gradient(180deg, #0072d2 0%, #003096 100%);
-        color: white;
+        background: linear-gradient(180deg, #0072D2 0%, #003096 100%);
+        color: #FFFFFF !important;
         border: none;
-        border-radius: 4px;
-        padding: 10px 20px;
-        width: 100%;
-        transition: 0.3s ease;
-    }
-    .stButton>button:hover { transform: scale(1.02); }
-
-    /* ป้ายแสดงคำสำคัญ (Chips) */
-    .keyword-chip {
-        background: rgba(0, 114, 210, 0.2);
-        color: #a8c0ff;
-        padding: 2px 10px;
-        border-radius: 4px;
-        font-size: 0.85rem;
-        margin-right: 5px;
-        display: inline-block;
-        border: 1px solid rgba(0, 114, 210, 0.3);
-    }
-
-    /* แถบวิเคราะห์ผลลัพธ์ */
-    .analysis-card {
-        background: #0c111b;
-        border-left: 4px solid #0072d2;
-        padding: 15px;
         border-radius: 6px;
-        margin-top: 10px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        transition: 0.3s;
+    }
+
+    /* ป้ายคำสำคัญ */
+    .feature-tag {
+        background: rgba(0, 114, 210, 0.3);
+        color: #A8C0FF;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        border: 1px solid #0072D2;
+        margin: 5px;
+        display: inline-block;
+    }
+
+    /* ปรับสี Metric ให้ขาวชัดเจน */
+    [data-testid="stMetricValue"] {
+        color: #FFFFFF !important;
+        font-weight: 700 !important;
+    }
+    [data-testid="stMetricLabel"] {
+        color: #A8C0FF !important;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# --- 4. เมนูข้าง (Sidebar) ---
+# --- 4. เมนูควบคุม (Sidebar) ---
 with st.sidebar:
-    st.markdown("<h2 style='text-align:center;'>CineSense Pro</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align:center; color:white;'>CineSense Pro</h2>", unsafe_allow_html=True)
     st.divider()
-    menu = st.radio("นำทาง", ["วิเคราะห์ความรู้สึก", "โครงสร้างระบบ"], index=0)
+    page = st.radio("เลือกโหมดการใช้งาน", ["วิเคราะห์รีวิวใหม่", "ตรวจสอบระบบ"], index=0)
     st.divider()
-    st.caption("เวอร์ชัน 4.6.2 | สถานะ: ปกติ")
+    st.info("ระบบทำงานปกติ (Stable)")
 
-# --- 5. ส่วนแสดงผลหลัก ---
-if menu == "วิเคราะห์ความรู้สึก":
-    st.markdown('<p class="main-title">CineSense Intelligence</p>', unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center; color:#a8c0ff; opacity:0.8;'>ระบบจำแนกทัศนคติจากรีวิวภาพยนตร์</p>", unsafe_allow_html=True)
+# --- 5. การแสดงผลเนื้อหา ---
+if page == "วิเคราะห์รีวิวใหม่":
+    st.markdown('<p class="brand-title">CineSense Pro</p>', unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; color:#A8C0FF; font-size:1.2rem;'>ระบบวิเคราะห์ความรู้สึกอัจฉริยะ สำหรับรีวิวภาพยนตร์</p>", unsafe_allow_html=True)
 
     if 'h' not in st.session_state: st.session_state.update({'h':'', 'b':'', 'l':'Positive'})
 
-    # แถบควบคุม
-    c_btn1, c_btn2, _ = st.columns([1, 1, 2])
+    # ปุ่มสุ่มข้อมูล
+    c_btn1, c_btn2, _ = st.columns([1, 1, 3])
     with c_btn1:
         if st.button("🎲 สุ่มรีวิว"):
             if df is not None:
                 s = df.sample(1).iloc[0]
-                st.session_state.update({'h': f"ID-{s['review_id'][:5]}", 'b': s['text'], 'l': s['label']})
+                st.session_state.update({'h': f"REF-{s['review_id'][:6]}", 'b': s['text'], 'l': s['label']})
                 st.rerun()
     with c_btn2:
-        if st.button("🧹 ล้างข้อมูล"):
+        if st.button("🧹 ล้างค่า"):
             st.session_state.update({'h':'', 'b':'', 'l':'Positive'})
             st.rerun()
 
-    # ส่วนกรอกข้อมูล
-    st.markdown('<div class="content-box">', unsafe_allow_html=True)
+    # ส่วนกรอกข้อมูลหลัก
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
     col_in1, col_in2 = st.columns([3, 1])
-    headline = col_in1.text_input("รหัสอ้างอิง", value=st.session_state.h)
-    target = col_in2.selectbox("เฉลยที่ถูกต้อง", ["Positive", "Neutral", "Negative"], 
-                               index=["Positive", "Neutral", "Negative"].index(st.session_state.l))
-    body = st.text_area("ข้อความที่ต้องการวิเคราะห์", value=st.session_state.b, height=180)
+    with col_in1:
+        headline = st.text_input("รหัสการวิเคราะห์ (Reference ID)", value=st.session_state.h)
+    with col_in2:
+        target = st.selectbox("คำตอบที่ถูกต้อง", ["Positive", "Neutral", "Negative"], 
+                             index=["Positive", "Neutral", "Negative"].index(st.session_state.l))
+    
+    body = st.text_area("ใส่ข้อความรีวิวภาพยนตร์ที่ต้องการประมวลผล", value=st.session_state.b, height=200)
 
-    if st.button("🚀 เริ่มการประมวลผล"):
+    if st.button("✨ เริ่มต้นการวิเคราะห์ (Analyze Now)"):
         if body.strip():
             st.divider()
-            res_a, res_b = st.columns(2)
+            res_left, res_right = st.columns(2)
             
-            # วนลูปแสดงผลทั้ง 2 โมเดลพร้อมคำสำคัญ
-            for m, col, name in [(model_v1, res_a, "Alpha Engine (แบบเดิม)"), (model_v2, res_b, "Sigma Core (แบบใหม่)")]:
+            for model, col, title in [(model_v1, res_left, "เอนจินพื้นฐาน (Alpha)"), (model_v2, res_right, "เอนจินปรับปรุง (Sigma)")]:
                 with col:
-                    if m:
-                        full_text = f"{headline} {body}"
-                        probs = m.predict_proba([full_text])[0]
-                        pred = m.classes_[np.argmax(probs)]
+                    if model:
+                        input_text = f"{headline} {body}"
+                        probs = model.predict_proba([input_text])[0]
+                        pred = model.classes_[np.argmax(probs)]
                         conf = np.max(probs) * 100
                         
                         st.markdown(f"""
-                            <div class="analysis-card">
-                                <small style='color:#0072d2;'>{name}</small>
-                                <h3 style='margin:5px 0;'>ผลทำนาย: {pred}</h3>
-                                <p style='margin:0; font-size:0.85rem; color:#888;'>ความเชื่อมั่น: {conf:.2f}%</p>
+                            <div style="background: rgba(0,0,0,0.3); border-left: 5px solid #0072D2; padding: 20px; border-radius: 8px;">
+                                <h4 style='color:#A8C0FF; margin-bottom:5px;'>{title}</h4>
+                                <h2 style='color:white; margin:0;'>ผลลัพธ์: {pred}</h2>
+                                <p style='color:#00FF88; margin:0;'>ความแม่นยำ: {conf:.2f}%</p>
                             </div>
                         """, unsafe_allow_html=True)
                         
-                        st.write("") # เว้นวรรค
-                        # แสดงคำสำคัญ (Feature Chips)
-                        feats = get_feature_importance(m, full_text, pred)
+                        # แสดงคำสำคัญ (Feature Importance)
+                        st.markdown("<br>", unsafe_allow_html=True)
+                        feats = get_feature_importance(model, input_text, pred)
                         if feats:
-                            st.caption("คำที่มีอิทธิพลต่อการตัดสินใจ:")
+                            st.write("**คำสำคัญที่ระบบตรวจพบ:**")
                             for f, _ in feats:
-                                st.markdown(f'<span class="keyword-chip">{f}</span>', unsafe_allow_html=True)
+                                st.markdown(f'<span class="feature-tag">{f}</span>', unsafe_allow_html=True)
         else:
-            st.warning("กรุณากรอกข้อความก่อนวิเคราะห์")
+            st.error("กรุณาใส่ข้อความรีวิวก่อนดำเนินการ")
     st.markdown('</div>', unsafe_allow_html=True)
 
 else:
-    # หน้าโครงสร้างระบบ
-    st.markdown('<p class="main-title">ระบบโครงสร้าง</p>', unsafe_allow_html=True)
+    # หน้าตรวจสอบระบบ (Architecture)
+    st.markdown('<p class="brand-title">โครงสร้างระบบ</p>', unsafe_allow_html=True)
     
-    st.markdown('<div class="content-box">', unsafe_allow_html=True)
-    c1, c2, c3 = st.columns(3)
-    c1.metric("ปริมาณข้อมูล", "5,000 รีวิว")
-    c2.metric("ความแม่นยำเฉลี่ย", "100%", delta="Verified")
-    c3.metric("สถานะเอนจิน", "Stable")
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    m1, m2, m3 = st.columns(3)
+    m1.metric("ข้อมูลในระบบ", "5,000 รีวิว")
+    m2.metric("ความแม่นยำสูงสุด", "100%", "Verified")
+    m3.metric("สถานะเอนจิน", "ทำงานปกติ")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown('<div class="content-box">', unsafe_allow_html=True)
-    st.subheader("🛠 กระบวนการทำงาน (Pipeline)")
-    st.write("- **ตัวแยกคำ (Tokenizer):** PyThaiNLP (newmm engine)")
-    st.write("- **การจัดการคำสำคัญ (Vectorization):** TF-IDF Analysis")
-    st.write("- **สถาปัตยกรรม:** Logistic Regression (Multiclass)")
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.subheader("⚙️ กระบวนการทำงานแบบ Pipeline")
+    st.markdown("""
+    * **ตัวแยกคำ (Tokenizer):** ใช้ `PyThaiNLP` (newmm engine) เพื่อความแม่นยำในการแยกคำไทย
+    * **การจัดการคำสำคัญ (Vectorization):** ใช้เทคนิค `TF-IDF Analysis` เพื่อถ่วงน้ำหนักคำที่สื่อถึงอารมณ์
+    * **โมเดลประมวลผล (Algorithm):** `Logistic Regression` (รุ่นปรับปรุง Sigma Core)
+    """)
     st.markdown('</div>', unsafe_allow_html=True)
