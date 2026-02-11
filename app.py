@@ -4,19 +4,19 @@ import pandas as pd
 import numpy as np
 from pythainlp.tokenize import word_tokenize
 
-# --- 1. ตั้งค่าเบื้องต้น ---
+# --- 1. CORE CONFIGURATION ---
 st.set_page_config(
-    page_title="CineSense Pro | ระบบวิเคราะห์รีวิวหนัง",
+    page_title="CineSense Pro | Netflix Edition",
     page_icon="🎬",
     layout="wide"
 )
 
-# --- 2. ฟังก์ชันระบบหลังบ้าน ---
+# --- 2. DATA ENGINE ---
 @st.cache_data(show_spinner=False)
 def thai_tokenize(text):
     return word_tokenize(str(text), engine='newmm')
 
-@st.cache_resource(show_spinner="กำลังเปิดระบบวิเคราะห์อัจฉริยะ...")
+@st.cache_resource(show_spinner="Loading Cinematic Intelligence...")
 def load_assets():
     try:
         m1 = joblib.load('model.joblib')
@@ -28,172 +28,186 @@ def load_assets():
 
 model_v1, model_v2, df = load_assets()
 
-def get_feature_importance(model, text, pred_class):
-    try:
-        tfidf = model.named_steps['tfidf']
-        clf = model.named_steps['clf']
-        feature_names = tfidf.get_feature_names_out()
-        tokens = thai_tokenize(text)
-        present_features = list(set([f for f in tokens if f in feature_names]))
-        if not present_features: return []
-        idx = list(clf.classes_).index(pred_class)
-        weights = clf.coef_[idx]
-        feat_list = []
-        for f in present_features:
-            f_idx = np.where(feature_names == f)[0][0]
-            feat_list.append((f, weights[f_idx]))
-        return sorted(feat_list, key=lambda x: x[1], reverse=True)[:5]
-    except: return []
-
-# --- 3. การตกแต่งสไตล์ Netflix (Dark & Elegant) ---
+# --- 3. PREMIUM DARK STYLING (Netflix Style) ---
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Kanit:wght@300;500&display=swap');
     
-    .stApp { background-color: #0b0b0b; color: #ffffff; font-family: 'Kanit', sans-serif; }
-    
-    /* การ์ดและกล่องข้อมูล */
-    .premium-card {
-        background: rgba(30, 30, 30, 0.8);
-        border: 1px solid #333;
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 20px;
+    /* Main Background */
+    .stApp {
+        background-color: #0f0f0f;
+        color: #ffffff;
+        font-family: 'Inter', 'Kanit', sans-serif;
     }
 
-    /* หัวข้อและตัวหนังสือ */
-    h1, h2, h3 { color: #E50914 !important; }
-    label, p { color: #cccccc !important; font-size: 1.1rem !important; }
+    /* Sidebar Customization */
+    section[data-testid="stSidebar"] {
+        background-color: #141414 !important;
+        border-right: 1px solid #333;
+    }
 
-    /* ช่องกรอกข้อมูล */
+    /* Card Styling */
+    .premium-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 20px;
+        backdrop-filter: blur(10px);
+    }
+
+    /* Typography */
+    h1, h2, h3 { color: #E50914 !important; font-weight: 700 !important; }
+    p, label, .stMarkdown { color: #e5e5e5 !important; }
+
+    /* Input & Text Area */
     .stTextArea textarea, .stTextInput input {
-        background-color: #1a1a1a !important;
+        background-color: #222 !important;
         color: white !important;
         border: 1px solid #444 !important;
+        border-radius: 8px !important;
     }
 
-    /* ปุ่มกดสีแดง Netflix */
+    /* Custom Buttons (Netflix Red) */
     .stButton>button {
         background-color: #E50914 !important;
         color: white !important;
-        border-radius: 5px !important;
         border: none !important;
-        padding: 10px 25px !important;
-        font-weight: bold !important;
-        width: 100%;
+        border-radius: 4px !important;
+        padding: 0.6rem 2rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: 0.3s ease all;
     }
-    
-    /* แถบสีแสดงสถานะ */
-    .match-tag { color: #00FF88; font-weight: bold; border: 1px solid #00FF88; padding: 2px 8px; border-radius: 4px; }
-    .mismatch-tag { color: #FF4B4B; font-weight: bold; border: 1px solid #FF4B4B; padding: 2px 8px; border-radius: 4px; }
-    
-    /* คำสำคัญ */
-    .keyword-chip {
-        background: rgba(229, 9, 20, 0.2);
+    .stButton>button:hover {
+        background-color: #ff0a16 !important;
+        transform: scale(1.02);
+    }
+
+    /* Feature Chips */
+    .feature-chip {
+        background: rgba(229, 9, 20, 0.15);
         color: #ff4b55;
-        padding: 4px 10px;
-        border-radius: 15px;
-        margin-right: 5px;
+        padding: 4px 12px;
+        border-radius: 20px;
         font-size: 0.85rem;
-        border: 1px solid #E50914;
+        margin-right: 8px;
+        border: 1px solid rgba(229, 9, 20, 0.3);
+    }
+
+    /* Error Table */
+    .styled-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 25px 0;
+        font-size: 0.9em;
+        border-radius: 10px;
+        overflow: hidden;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# --- 4. เมนูข้างทาง ---
+# --- 4. NAVIGATION ---
 with st.sidebar:
-    st.markdown("<h1 style='text-align:center;'>CineSense</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center;'>ระบบวิเคราะห์อารมณ์รีวิวหนัง</p>", unsafe_allow_html=True)
+    st.markdown("<h1 style='font-size: 2.2rem; margin-bottom:0;'>CineSense</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#808080;'>PRO EDITION v4.6.2</p>", unsafe_allow_html=True)
     st.divider()
-    menu = st.radio("เลือกหน้าเมนู", ["หนูหน้าหลัก (วิเคราะห์)", "เจาะลึกข้อผิดพลาด", "ข้อมูลทางเทคนิค"], index=0)
+    menu = st.radio("SELECT MODE", ["MAIN TERMINAL", "ERROR ANALYSIS", "ARCHITECTURE"], index=0)
     st.divider()
-    st.info("สถานะระบบ: พร้อมใช้งาน")
+    st.markdown("### Model Status")
+    st.success("● Sigma Core: Online")
+    st.caption("Last Updated: Feb 2026")
 
-# --- 5. เนื้อหาแต่ละหน้า ---
+# --- 5. PAGE ROUTING ---
 
-if menu == "หนูหน้าหลัก (วิเคราะห์)":
-    st.markdown("## 🎬 เริ่มการวิเคราะห์รีวิวของคุณ")
+if menu == "MAIN TERMINAL":
+    st.markdown("<h2>Analyze Cinematic Sentiment</h2>", unsafe_allow_html=True)
     
     if 'h' not in st.session_state: st.session_state.update({'h':'', 'b':'', 'l':'Positive'})
 
-    c1, c2, _ = st.columns([1, 1, 4])
-    with c1:
-        if st.button("🎲 สุ่มรีวิว"):
+    col_btn1, col_btn2, _ = st.columns([1, 1, 4])
+    with col_btn1:
+        if st.button("🎲 RANDOM"):
             if df is not None:
                 s = df.sample(1).iloc[0]
-                st.session_state.update({'h': f"ID-{s['review_id'][:6]}", 'b': s['text'], 'l': s['label']})
+                st.session_state.update({'h': f"REF-{s['review_id'][:8]}", 'b': s['text'], 'l': s['label']})
                 st.rerun()
-    with c2:
-        if st.button("🧹 ล้างหน้าจอ"):
+    with col_btn2:
+        if st.button("🧹 CLEAR"):
             st.session_state.update({'h':'', 'b':'', 'l':'Positive'})
             st.rerun()
 
     st.markdown('<div class="premium-card">', unsafe_allow_html=True)
-    r1, r2 = st.columns([3, 1])
-    h_input = r1.text_input("รหัสอ้างอิงข้อมูล", value=st.session_state.h, placeholder="เช่น REF-001")
-    l_input = r2.selectbox("เฉลยจริง (Label)", ["Positive", "Neutral", "Negative"], 
-                         index=["Positive", "Neutral", "Negative"].index(st.session_state.l))
-    
-    b_input = st.text_area("ใส่เนื้อหารีวิวหนังที่นี่", value=st.session_state.b, height=200)
+    c1, c2 = st.columns([3, 1])
+    headline = c1.text_input("Entry Reference", value=st.session_state.h, placeholder="e.g. MOVIE-REVIEW-001")
+    target = c2.selectbox("True Label", ["Positive", "Neutral", "Negative"], 
+                        index=["Positive", "Neutral", "Negative"].index(st.session_state.l))
+    body = st.text_area("Review Content", value=st.session_state.b, height=200, placeholder="Paste Thai movie review here...")
 
-    if st.button("🚀 เริ่มวิเคราะห์เดี๋ยวนี้"):
-        if b_input.strip():
-            st.markdown("### ผลการวิเคราะห์จากระบบ AI")
-            col_v1, col_v2 = st.columns(2)
-            
-            for model, col, name in [(model_v1, col_v1, "ระบบรุ่นมาตรฐาน (Alpha)"), (model_v2, col_v2, "ระบบรุ่นอัจฉริยะ (Sigma)")]:
+    if st.button("INITIATE AI ANALYSIS", use_container_width=True):
+        if body.strip():
+            st.markdown("### Analysis Results")
+            r_col1, r_col2 = st.columns(2)
+            for m, col, name in [(model_v1, r_col1, "Alpha (Baseline)"), (model_v2, r_col2, "Sigma (Advanced)")]:
                 with col:
-                    if model:
-                        probs = model.predict_proba([f"{h_input} {b_input}"])[0]
-                        pred = model.classes_[np.argmax(probs)]
+                    if m:
+                        probs = m.predict_proba([f"{headline} {body}"])[0]
+                        pred = m.classes_[np.argmax(probs)]
                         conf = np.max(probs) * 100
-                        is_match = pred == l_input
+                        is_correct = pred == target
                         
-                        tag = f'<span class="match-tag">ทายถูก</span>' if is_match else f'<span class="mismatch-tag">ทายผิด</span>'
-                        
+                        status_color = "#00FF88" if is_correct else "#FF4B4B"
                         st.markdown(f"""
-                            <div style="background:#222; padding:20px; border-radius:10px; border-top: 4px solid #E50914;">
-                                <p style='margin:0;'>{name}</p>
-                                <h2 style='margin:10px 0; color:white !important;'>{pred} {tag}</h2>
-                                <p style='font-size:0.9rem; color:#888;'>ระดับความมั่นใจ: {conf:.2f}%</p>
+                            <div style="border-left: 5px solid {status_color}; background: rgba(255,255,255,0.03); padding: 20px; border-radius: 0 10px 10px 0;">
+                                <p style='margin:0; font-weight:bold; color:#E50914;'>{name}</p>
+                                <h2 style='margin:10px 0; color:white !important;'>{pred}</h2>
+                                <p style='margin:0; font-size: 0.9rem;'>Accuracy: <span style='color:{status_color}'>{'MATCHED' if is_correct else 'MISMATCHED'}</span></p>
                             </div>
                         """, unsafe_allow_html=True)
                         st.progress(int(conf))
-                        
-                        # แสดงคำสำคัญ
-                        st.write("คำสำคัญที่ AI ใช้ตัดสินใจ:")
-                        feats = get_feature_importance(model, f"{h_input} {b_input}", pred)
-                        for w, _ in feats:
-                            st.markdown(f'<span class="keyword-chip">{w}</span>', unsafe_allow_html=True)
-        else: st.error("กรุณาใส่ข้อความรีวิวก่อนครับ")
+                        st.caption(f"Confidence Level: {conf:.2f}%")
+        else: st.warning("Please enter text for analysis.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-elif menu == "เจาะลึกข้อผิดพลาด":
-    st.markdown("## 🔍 วิเคราะห์จุดที่ AI ทายผิด (Error Analysis)")
-    st.write("ตารางด้านล่างแสดงตัวอย่างที่โมเดล Sigma ทายไม่ตรงกับเฉลยจริง")
+elif menu == "ERROR ANALYSIS":
+    st.markdown("<h2>Error Analysis Dashboard</h2>", unsafe_allow_html=True)
+    st.write("ตรวจสอบและวิเคราะห์เคสที่โมเดล Sigma Core ทำนายผิดพลาดเพื่อหาแนวทางปรับปรุง")
 
     if df is not None and model_v2 is not None:
-        # สุ่มเช็คหาจุดผิด 50 อันเพื่อโชว์
-        sample_df = df.sample(50)
-        sample_df['AI_Predict'] = model_v2.predict(sample_df['text'])
-        errors = sample_df[sample_df['label'] != sample_df['AI_Predict']]
+        # ประมวลผลหา Mismatch (ในแอปจริงควรสุ่มมาโชว์เพื่อความเร็ว)
+        test_sample = df.sample(100) # สุ่มมา 100 เคสเพื่อความเร็วหน้าเว็บ
+        preds = model_v2.predict(test_sample['text'])
+        test_sample['Prediction'] = preds
+        errors = test_sample[test_sample['label'] != test_sample['Prediction']]
 
         st.markdown('<div class="premium-card">', unsafe_allow_html=True)
+        st.write(f"พบข้อผิดพลาด **{len(errors)}** เคส จากการสุ่มตรวจสอบ 100 รายการ")
+        
         if not errors.empty:
-            for idx, row in errors.head(5).iterrows():
-                with st.expander(f"❌ รีวิวรหัส {row['review_id'][:6]} | เฉลย: {row['label']} | AI ทายว่า: {row['AI_Predict']}"):
-                    st.write(f"**เนื้อหารีวิว:** {row['text']}")
-                    st.info("สาเหตุที่อาจผิด: คำประชดประชัน หรือ ประโยคมีความหมายก้ำกึ่ง")
+            for i, row in errors.head(5).iterrows():
+                with st.expander(f"❌ Error ใน Review ID: {row['review_id'][:8]} (True: {row['label']} | AI: {row['Prediction']})"):
+                    st.write(f"**ข้อความ:** {row['text']}")
+                    st.divider()
+                    st.caption("Possible Reason: Contextual Ambiguity / Sarcasm")
         else:
-            st.success("ยอดเยี่ยม! ในชุดข้อมูลสุ่มนี้ AI ทายถูกทั้งหมด")
+            st.success("No errors found in this sample batch!")
         st.markdown('</div>', unsafe_allow_html=True)
 
 else:
-    st.markdown("## ⚙️ ข้อมูลเชิงเทคนิค")
+    st.markdown("<h2>System Architecture</h2>", unsafe_allow_html=True)
+    
     
     st.markdown('<div class="premium-card">', unsafe_allow_html=True)
-    st.write("- **ฐานข้อมูล:** รีวิวหนังไทย 5,000 รายการ")
-    st.write("- **เทคนิคการตัดคำ:** PyThaiNLP (ตัดคำภาษาไทยแบบแม่นยำ)")
-    st.write("- **โมเดลที่ใช้:** Logistic Regression (ตัวเลือกที่ดีที่สุดสำหรับข้อความ)")
-    st.write("- **รุ่น Sigma:** เพิ่มพลังด้วย N-gram ทำให้เข้าใจบริบทของคำที่อยู่ติดกัน")
+    a1, a2, a3 = st.columns(3)
+    a1.metric("Total Records", "5,000")
+    a2.metric("Architecture", "Logistic Regression")
+    a3.metric("N-Gram Range", "(1, 2)")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="premium-card">', unsafe_allow_html=True)
+    st.subheader("Technical Pipeline")
+    st.write("1. **Tokenization:** PyThaiNLP (newmm engine)")
+    st.write("2. **Vectorization:** TF-IDF with Bi-gram support")
+    st.write("3. **Classifier:** Logistic Regression with Hyperparameter C=2.0")
     st.markdown('</div>', unsafe_allow_html=True)
